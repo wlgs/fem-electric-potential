@@ -25,9 +25,9 @@ function e_i(i, n, x) {
       */
     let h = length / n;
 
-    k = a + (i - 1) * h;
-    l = a + i * h;
-    m = a + (i + 1) * h;
+    let k = a + (i - 1) * h;
+    let l = a + i * h;
+    let m = a + (i + 1) * h;
 
     if (i == 0) {
         /* lewy brzeg */
@@ -56,9 +56,9 @@ function de_i(i, n, x) {
       */
     let h = length / n;
 
-    k = a + (i - 1) * h;
-    l = a + i * h;
-    m = a + (i + 1) * h;
+    let k = a + (i - 1) * h;
+    let l = a + i * h;
+    let m = a + (i + 1) * h;
 
     if (i == 0) {
         /* lewy brzeg */
@@ -74,9 +74,39 @@ function de_i(i, n, x) {
         else return 0;
     }
 }
+/* shift */
+function w(n,x){
+    return 2*e_i(n, n, x)
+}
 
 function integrate(f, a, b) {
     return gaussLegendre(f, a, b, 5);
+}
+
+function B(i, j, n){
+    let C = e_i(i,n,0)*e_i(j,n,0) // e_i(0)e_j(0)
+    function product(x){
+        return de_i(i, n, x)*de_i(j,n,x)
+    }
+
+    if (i == j){
+        var left = (i-1)*h
+        var right = (i+1)*h
+    } 
+    else{
+        var left = Math.min(i, j) * h
+        var right = Math.max(i, j) * h
+    }
+
+    return C - integrate(product, left, right)
+}
+
+function L(i, n){
+    let C = 5*e_i(i, n, 0)
+    function e_i2(x){
+        return e_i(i,n,x)
+    }
+    return C - integrate(e_i2, 0, 3)
 }
 
 function fem(n) { }
