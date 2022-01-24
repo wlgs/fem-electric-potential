@@ -113,4 +113,68 @@ function L2(i,n){
     return L(i,n) - 2*B(n, i, n)
 }
 
-function fem(n) { }
+function fem(n) {
+
+    let Bmatrix = new Array(n+1) // 0.... n łacznie
+    Bmatrix.forEach(element => {
+        element = new Array(n+1).fill(0)
+    });
+    let Lmatrix = new Array(n+1).fill(0)
+
+    //solver
+
+    for(let i = 0; i< Bmatrix.length; i++)
+        for(let j = 0; j< Bmatrix[0].length; j++){
+            Bmatrix[i][j] = B(i,j,n)
+        }
+
+    for(let i = 0; i< Lmatrix.length; i++){
+        Lmatrix[i] = L2(i,n)
+    }
+
+    let Wmatrix = linear.solve(matrixB, matrixL)
+
+ }
+
+
+ const drawCanvas = ({ mes }) => {
+    new Chart(document.getElementById("mesChart").getContext("2d"), {
+      type: "line",
+      data: {
+        datasets: [
+          {
+            label: "MES",
+            data: mes,
+            backgroundColor: "#ff6384",
+            borderColor: "#ff6384",
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        title: {
+          display: true,
+          text: "Metoda Elementów Skonczonych",
+        },
+        scales: {
+          xAxes: [
+            {
+              type: "linear",
+            },
+          ],
+        },
+      },
+    });
+  };
+  
+  window.onload = () => {
+    drawCanvas(MES(100));
+  
+    document.getElementById("nButton").addEventListener("click", () => {
+      drawCanvas(MES(Number(document.getElementById("nInput").value)));
+    });
+  };
+
+  
