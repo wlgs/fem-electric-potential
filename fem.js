@@ -106,7 +106,11 @@ function L(i, n){
     function e_i2(x){
         return e_i(i,n,x)
     }
-    return C - integrate(e_i2, 0, 3)
+    return C - integrate(e_i2, a, b)
+}
+
+function L2(i,n){
+    return L(i,n) - 2*B(n, i, n)
 }
 
 function fem(n) { }
