@@ -216,6 +216,34 @@ function e(i, x, n) {
     return 0;
 }
 
+
+// function e(k,x,n){
+//     let h = length / n;
+//     let xi1 = h * (k - 1);
+//     let xi2 = h * k;
+//     let xi3 = h * (k + 1);
+//     let y;
+//     if (k == 0)
+//         if (0<=x && x<=h)
+//             y = (xi3-x)/h;
+//         else
+//             y = 0;
+//     else if (k == n)
+//         if (3-h<=x && x<=3)
+//             y = (x-xi1)/h;
+//         else 
+//             y = 0;
+//     else
+//         if (xi1<=x && x<=xi2)
+//             y = (x-xi1)/h;
+//         else if (xi2<x && x<xi3)
+//             y = (xi3-x)/h;
+//         else 
+//             y = 0;
+//     return y
+// }
+
+
 function de(i, x, n) {
     let h = length / n;
     let xi1 = h * (i - 1);
