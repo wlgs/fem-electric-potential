@@ -20,4 +20,4 @@ The equation and its weak and strong forms is available [here (pdf)](doc/equatio
 ## Dependencies
 
 * [linear solve](https://www.npmjs.com/package/linear-solve) - to solve final matrix
-* [Gauss-Legendre Quadrature JS](https://rosettacode.org/wiki/Numerical_integration/Gauss-Legendre_Quadrature#JavaScript) - used to integrate functions
+* [Gauss-Legendre Quadrature JS](https://rosettacode.org/wiki/Numerical_integration/Gauss-Legendre_Quadrature#JavaScript) - to integrate functions
