@@ -292,8 +292,8 @@ function getY(matrixW, x, n){
     var res = 0
     for(let i =0; i<=n-1; i++){
         res += matrixW[i]*e(i,x,n)
+        console.log(i, e(i, x, n))
     }
     res += 2 * e(n, x, n)
-    console.log(x, 2 * e(n, x, n))
     return res
 }
