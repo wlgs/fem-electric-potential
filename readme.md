@@ -9,7 +9,7 @@
   <img src="img/sample-graph.png" alt="Final graph as the solution.">
 </p>
   <p align="center">
-    Solved equation and its resolution on graph.
+    Solved equation and its solution drawn on graph.
 </p>
 
 ## Description
