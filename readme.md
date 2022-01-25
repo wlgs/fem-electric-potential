@@ -15,7 +15,7 @@
 ## Description
 This repository is a project made as an assignment in the Differential Equations course 2021/22 at UST AGH.
 
-The equation and its weak and strong forms are available [here (pdf)](doc/equation.pdf).
+The equation and its weak and strong forms is available [here (pdf)](doc/equation.pdf).
 
 ## Dependencies
 
