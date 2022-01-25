@@ -81,9 +81,8 @@ function fem(n) {
         matrixL[i] = L2(i, n);
     }
     var matrixW = solve(matrixB, matrixL);
-
     var finalRes = new Array()
-    for (let i = 0; i <= n - 1; i++) {
+    for (let i = 0; i <= n; i++) {
         finalRes.push({
             x: i * h,
             y: getY(matrixW, i * h, n)
