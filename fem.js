@@ -1,3 +1,121 @@
+function Mat(data, mirror) {
+    // Clone the original matrix
+    this.data = new Array(data.length);
+    for (var i = 0, cols = data[0].length; i < data.length; i++) {
+        this.data[i] = new Array(cols);
+        for (var j = 0; j < cols; j++) {
+            this.data[i][j] = data[i][j];
+        }
+    }
+
+    if (mirror) {
+        if (typeof mirror[0] !== "object") {
+            for (var i = 0; i < mirror.length; i++) {
+                mirror[i] = [mirror[i]];
+            }
+        }
+        this.mirror = new Mat(mirror);
+    }
+}
+
+/**
+ * Swap lines i and j in the matrix
+ */
+Mat.prototype.swap = function (i, j) {
+    if (this.mirror) this.mirror.swap(i, j);
+    var tmp = this.data[i];
+    this.data[i] = this.data[j];
+    this.data[j] = tmp;
+};
+
+/**
+ * Multiply line number i by l
+ */
+Mat.prototype.multline = function (i, l) {
+    if (this.mirror) this.mirror.multline(i, l);
+    var line = this.data[i];
+    for (var k = line.length - 1; k >= 0; k--) {
+        line[k] *= l;
+    }
+};
+
+/**
+ * Add line number j multiplied by l to line number i
+ */
+Mat.prototype.addmul = function (i, j, l) {
+    if (this.mirror) this.mirror.addmul(i, j, l);
+    var lineI = this.data[i],
+        lineJ = this.data[j];
+    for (var k = lineI.length - 1; k >= 0; k--) {
+        lineI[k] = lineI[k] + l * lineJ[k];
+    }
+};
+
+/**
+ * Tests if line number i is composed only of zeroes
+ */
+Mat.prototype.hasNullLine = function (i) {
+    for (var j = 0; j < this.data[i].length; j++) {
+        if (this.data[i][j] !== 0) {
+            return false;
+        }
+    }
+    return true;
+};
+
+Mat.prototype.gauss = function () {
+    var pivot = 0,
+        lines = this.data.length,
+        columns = this.data[0].length,
+        nullLines = [];
+
+    for (var j = 0; j < columns; j++) {
+        // Find the line on which there is the maximum value of column j
+        var maxValue = 0,
+            maxLine = 0;
+        for (var k = pivot; k < lines; k++) {
+            var val = this.data[k][j];
+            if (Math.abs(val) > Math.abs(maxValue)) {
+                maxLine = k;
+                maxValue = val;
+            }
+        }
+        if (maxValue === 0) {
+            // The matrix is not invertible. The system may still have solutions.
+            nullLines.push(pivot);
+        } else {
+            // The value of the pivot is maxValue
+            this.multline(maxLine, 1 / maxValue);
+            this.swap(maxLine, pivot);
+            for (var i = 0; i < lines; i++) {
+                if (i !== pivot) {
+                    this.addmul(i, pivot, -this.data[i][j]);
+                }
+            }
+        }
+        pivot++;
+    }
+
+    // Check that the system has null lines where it should
+    for (var i = 0; i < nullLines.length; i++) {
+        if (!this.mirror.hasNullLine(nullLines[i])) {
+            throw new Error("singular matrix");
+        }
+    }
+    return this.mirror.data;
+};
+
+function solve(A, b) {
+    var result = new Mat(A, b).gauss();
+    if (result.length > 0 && result[0].length === 1) {
+        // Convert Nx1 matrices to simple javascript arrays
+        for (var i = 0; i < result.length; i++) result[i] = result[i][0];
+    }
+    return result;
+}
+
+const integrate = (fn, a, b) => gaussLegendre(fn, a, b, 5);
+
 /* const */
 
 const rho = 1;
@@ -13,168 +131,162 @@ function e_r(x) {
     else return 1;
 }
 
-function e_i(i, n, x) {
-    /*
-      i - idx
-      n - precision
-      x - point
-  
-      the logic is like that
-      x_i-1    x_i     x_i+1
-      k         l        m
-      */
+function e(i, x, n) {
     let h = length / n;
+    let xi1 = h * (i - 1);
+    let xi2 = h * i;
+    let xi3 = h * (i + 1);
 
-    let k = a + (i - 1) * h;
-    let l = a + i * h;
-    let m = a + (i + 1) * h;
-
-    if (i == 0) {
-        /* lewy brzeg */
-        if (x >= 0 && x <= h) return (m - x) / h;
-        return 0;
-    } else if (i == n) {
-        /* prawy brzeg */
-        if (x >= b - h && x <= b) return (x - k) / h;
-        return 0;
-    } else {
-        if (x >= k && x <= l) return (x - k) / h;
-        else if (x >= l && x <= m) return (m - x) / h;
-        else return 0;
-    }
+    if (x > xi1 && x <= xi2) return (x - xi1) / h;
+    else if (x > xi2 && x < xi3) return (xi3 - x) / h;
+    return 0;
 }
 
-function de_i(i, n, x) {
-    /*
-      i - idx
-      n - precision
-      x - point
-  
-      the logic is like that
-      x_i-1    x_i     x_i+1
-      k         l        m
-      */
+function de(i, x, n) {
     let h = length / n;
+    let xi1 = h * (i - 1);
+    let xi2 = h * i;
+    let xi3 = h * (i + 1);
 
-    let k = a + (i - 1) * h;
-    let l = a + i * h;
-    let m = a + (i + 1) * h;
+    if (x > xi1 && x <= xi2) return 1 / h;
+    else if (x > xi2 && x < xi3) return -1 / h;
+    return 0;
+}
 
-    if (i == 0) {
-        /* lewy brzeg */
-        if (x >= 0 && x <= h) return -1 / h;
-        return 0;
-    } else if (i == n) {
-        /* prawy brzeg */
-        if (x >= b - h && x <= b) return 1 / h;
-        return 0;
-    } else {
-        if (x >= k && x <= l) return 1 / h;
-        else if (x >= l && x <= m) return -1 / h;
-        else return 0;
+function B(i, j, n) {
+    let h = length / n;
+    var left = e(i, 0, n) * e(j, 0, n);
+
+    var integralBoundLeft = Math.max(0, (i - 1) * h, (j - 1) * h);
+    var integralBoundRight = Math.min((i + 1) * h, (j + 1) * h);
+
+    function fn(x) {
+        return de(i, x, n) * de(j, x, n);
     }
-}
-/* shift */
-function w(n,x){
-    return 2*e_i(n, n, x)
+    var integral = integrate(fn, integralBoundLeft, integralBoundRight);
+    return left - integral;
 }
 
-function integrate(f, a, b) {
-    return gaussLegendre(f, a, b, 5);
-}
+function L(i, n) {
+    let h = length / n;
+    var left = 5 * e(i, 0, n);
 
-function B(i, j, n){
-    let C = e_i(i,n,0)*e_i(j,n,0) // e_i(0)e_j(0)
-    function product(x){
-        return de_i(i, n, x)*de_i(j,n,x)
+    var integralBoundLeft = Math.max(0, (i - 1) * h);
+    var integralBoundRight = Math.min((i + 1) * h, 3);
+
+    function fn(x) {
+        return e(i, x, n) / e_r(x);
     }
-
-    if (i == j){
-        var left = (i-1)*h
-        var right = (i+1)*h
-    } 
-    else{
-        var left = Math.min(i, j) * h
-        var right = Math.max(i, j) * h
-    }
-
-    return C - integrate(product, left, right)
+    var integral = integrate(fn, integralBoundLeft, integralBoundRight);
+    return left - integral;
 }
 
-function L(i, n){
-    let C = 5*e_i(i, n, 0)
-    function e_i2(x){
-        return e_i(i,n,x)
-    }
-    return C - integrate(e_i2, a, b)
-}
-
-function L2(i,n){
-    return L(i,n) - 2*B(n, i, n)
+function L2(i, n) {
+    return L(i, n) - 2 * B(n, i, n);
 }
 
 function fem(n) {
+    let h = length / n;
+    var matrixB = new Array(n);
+    for (let i = 0; i <= n - 1; i++) matrixB[i] = new Array(n).fill(0);
+    var matrixL = new Array(n).fill(0);
 
-    let Bmatrix = new Array(n+1) // 0.... n łacznie
-    Bmatrix.forEach(element => {
-        element = new Array(n+1).fill(0)
-    });
-    let Lmatrix = new Array(n+1).fill(0)
-
-    //solver
-
-    for(let i = 0; i< Bmatrix.length; i++)
-        for(let j = 0; j< Bmatrix[0].length; j++){
-            Bmatrix[i][j] = B(i,j,n)
+    for (let i = 0; i <= n - 1; i++)
+        for (let j = 0; j <= n - 1; j++) {
+            if (Math.abs(i - j) > 1) continue;
+            matrixB[i][j] = B(i, j, n);
         }
-
-    for(let i = 0; i< Lmatrix.length; i++){
-        Lmatrix[i] = L2(i,n)
+    for (let i = 0; i <= n - 1; i++) {
+        matrixL[i] = L2(i, n);
     }
+    var matrixW = solve(matrixB, matrixL);
 
-    let Wmatrix = linear.solve(matrixB, matrixL)
+    var matrixX = new Array(n);
+    for (let i = 0; i <= n - 1; i++) {
+        matrixX[i] = i * h;
+    }
+    // console.log(matrixB)
+    // console.log(matrixL)
+    // console.log(matrixX)
+    // console.log("----------")
 
- }
+    return {
+        fem: matrixX.map((x, i) => ({
+            x: x,
+            y: matrixW[i] + 2 * e(n, x, n),
+        })),
+    };
+}
 
 
- const drawCanvas = ({ mes }) => {
-    new Chart(document.getElementById("mesChart").getContext("2d"), {
-      type: "line",
-      data: {
-        datasets: [
-          {
-            label: "MES",
-            data: mes,
-            backgroundColor: "#ff6384",
-            borderColor: "#ff6384",
-            fill: false,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        title: {
-          display: true,
-          text: "Metoda Elementów Skonczonych",
+
+function drawGraph(n) {
+    myChart = new Chart(document.getElementById("femChart").getContext("2d"), {
+        type: "line",
+        data: {
+            datasets: [
+                {
+                    label: "equation value",
+                    data: fem(n).fem,
+                    backgroundColor: "#041C32",
+                    borderColor: "#041C32",
+                    fill: false,
+                },
+            ],
         },
-        scales: {
-          xAxes: [
-            {
-              type: "linear",
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                xAxes: [
+                    {
+                        type: "linear",
+                    },
+                ],
             },
-          ],
+            tooltips: {
+                enabled: false,
+            },
+            animation: false,
+            hover: { mode: null },
+            elements: {
+                point: {
+                    radius: 3,
+                },
+            },
         },
-      },
     });
-  };
-  
-  window.onload = () => {
-    drawCanvas(MES(100));
-  
-    document.getElementById("nButton").addEventListener("click", () => {
-      drawCanvas(MES(Number(document.getElementById("nInput").value)));
-    });
-  };
+}
 
-  
+var myChart = null
+console.log(myChart)
+var cnt = 0;
+var snackbarContainer = document.querySelector("#information");
+window.onload = () => {
+    document.getElementById("btn").addEventListener("click", () => {
+        if (document.getElementById("inputValue").value != "") {
+            var date1 = new Date();
+
+            drawGraph(Number(document.getElementById("inputValue").value));
+            var date2 = new Date();
+            var diff = date2 - date1;
+            var data = { message: "Calculated in " + diff + "ms" };
+            snackbarContainer.MaterialSnackbar.showSnackbar(data);
+        } else {
+            var data = { message: "Input some values first!" };
+            snackbarContainer.MaterialSnackbar.showSnackbar(data);
+        }
+    });
+
+    document.getElementById("switch-1").addEventListener("click",()=>{
+        if (cnt%2==0)
+            myChart.options.elements.point.radius = 0;
+        else
+            myChart.options.elements.point.radius = 3;
+        cnt += 1
+        myChart.update();
+    });
+
+
+};
+

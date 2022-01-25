@@ -1,1 +1,28 @@
-/* TODO: styles here */
+* {
+  margin: 0;
+  padding: 0;
+}
+body {
+  background-color: #eeeeee;
+  color: rgb(43, 45, 46);
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+button {
+  background-color: aliceblue;
+}
+input,
+.mdl-textfield__input,
+#inputN,
+.mdl-textfield__label {
+  text-align: center !important;
+}
+
+#switch{
+    padding-top:1em;
+}
